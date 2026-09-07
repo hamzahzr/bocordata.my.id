@@ -5,3 +5,6 @@ deployment:
     - /bin/cp index.html $DEPLOYPATH
     - /bin/cp style.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH
+    - /bin/mkdir -p $DEPLOYPATH/api
+    - /bin/cp api/check.php $DEPLOYPATH/api/
+    - /bin/cp api/config.php $DEPLOYPATH/api/
