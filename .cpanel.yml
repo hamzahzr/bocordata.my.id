@@ -6,5 +6,11 @@ deployment:
     - /bin/cp style.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH
     - /bin/mkdir -p $DEPLOYPATH/api
+    - /bin/cp api/lib.php $DEPLOYPATH/api/
     - /bin/cp api/check.php $DEPLOYPATH/api/
-    - /bin/cp api/config.php $DEPLOYPATH/api/
+    - /bin/cp api/login.php $DEPLOYPATH/api/
+    - /bin/cp api/register.php $DEPLOYPATH/api/
+    - /bin/cp api/logout.php $DEPLOYPATH/api/
+    - /bin/cp api/session.php $DEPLOYPATH/api/
+    - /bin/cp api/admin.php $DEPLOYPATH/api/
+    - /bin/cp api/.htaccess $DEPLOYPATH/api/
