@@ -3,6 +3,7 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/jetz7773/public_html/bocordata.my.id/
     - /bin/cp index.html $DEPLOYPATH
+    - /bin/cp admin.html $DEPLOYPATH
     - /bin/cp style.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH
     - /bin/mkdir -p $DEPLOYPATH/api
