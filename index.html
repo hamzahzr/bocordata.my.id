@@ -14,17 +14,39 @@
       <h1>Selamat datang</h1>
       <p class="muted">Login untuk mengakses pemeriksaan data.</p>
       <form id="loginForm">
-        <label>Email</label><input id="email" type="email" placeholder="admin@example.com" required>
+        <label>Email</label><input id="email" type="email" placeholder="nama@email.com" required>
         <label>Password</label><input id="password" type="password" placeholder="••••••••" required>
         <button class="primary" type="submit">Masuk ke Dashboard <span>→</span></button>
-        <div id="loginError" class="error hidden">Email atau password salah.</div>
+        <div id="loginError" class="error hidden"></div>
       </form>
+      <button id="showRegister" class="secondary full">Daftar akun baru</button>
       <p class="privacy">Akses hanya untuk pengguna terotorisasi.</p>
     </section>
   </div>
 
+  <div id="registerView" class="auth-page hidden">
+    <section class="auth-card">
+      <div class="brand"><div class="brand-mark">B</div><div><strong>BocorData.my.id</strong><span>Secure Data Intelligence</span></div></div>
+      <div class="eyebrow">REQUEST ACCESS</div>
+      <h1>Daftar akun</h1>
+      <p class="muted">Akun baru akan menunggu persetujuan administrator.</p>
+      <form id="registerForm">
+        <label>Nama</label><input id="regName" type="text" placeholder="Nama lengkap" required>
+        <label>Email</label><input id="regEmail" type="email" placeholder="nama@email.com" required>
+        <label>Password</label><input id="regPassword" type="password" minlength="8" placeholder="Minimal 8 karakter" required>
+        <button class="primary" type="submit">Kirim Pendaftaran <span>→</span></button>
+        <div id="registerError" class="error hidden"></div>
+        <div id="registerSuccess" class="success hidden"></div>
+      </form>
+      <button id="backLogin" class="secondary full">← Kembali ke login</button>
+    </section>
+  </div>
+
   <div id="appView" class="app hidden">
-    <header class="topbar"><div class="brand"><div class="brand-mark">B</div><div><strong>BocorData.my.id</strong><span>Secure Data Intelligence</span></div></div><button id="logout" class="ghost">Keluar</button></header>
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">B</div><div><strong>BocorData.my.id</strong><span>Secure Data Intelligence</span></div></div>
+      <div class="top-actions"><button id="adminBtn" class="secondary hidden">Admin Panel</button><button id="logout" class="ghost">Keluar</button></div>
+    </header>
     <main class="container">
       <div class="hero"><div><div class="eyebrow">DATA EXPOSURE CHECK</div><h1>Cek kebocoran data</h1><p>Masukkan identifier yang ingin diperiksa melalui API Anda.</p></div><div class="status"><i></i> Sistem siap</div></div>
       <section class="panel">
@@ -32,10 +54,26 @@
         <div class="search-row"><input id="query" placeholder="Email, nomor telepon, username, atau identifier lain"><button id="checkBtn" class="primary">Periksa Data <span>→</span></button></div>
         <p class="hint">Gunakan hanya data yang Anda berwenang untuk periksa.</p>
       </section>
-      <section id="resultPanel" class="panel result hidden"><div class="result-head"><div><div class="eyebrow">HASIL PEMERIKSAAN</div><h2 id="resultTitle">Hasil</h2></div><span id="resultBadge" class="badge">—</span></div><pre id="resultData"></pre></section>
+      <section id="resultPanel" class="panel result hidden">
+        <div class="result-head"><div><div class="eyebrow">HASIL PEMERIKSAAN</div><h2 id="resultTitle">Hasil</h2><p id="resultMeta" class="hint"></p></div><span id="resultBadge" class="badge">—</span></div>
+        <div id="resultData" class="result-content"></div>
+        <div class="result-actions"><button id="downloadPdf" class="secondary">↓ Download PDF</button><button id="copyResult" class="secondary">Salin hasil</button></div>
+      </section>
     </main>
     <footer>© 2026 BocorData.my.id · Authorized access only</footer>
   </div>
+
+  <div id="adminView" class="app hidden">
+    <header class="topbar"><div class="brand"><div class="brand-mark">B</div><div><strong>BocorData.my.id</strong><span>Administrator</span></div></div><button id="backDashboard" class="ghost">← Dashboard</button></header>
+    <main class="container">
+      <div class="hero"><div><div class="eyebrow">ADMINISTRATION</div><h1>Manajemen akun</h1><p>Setujui atau tolak permintaan akses pengguna.</p></div></div>
+      <section class="panel stats"><div><span>Pending</span><strong id="pendingCount">0</strong></div><div><span>Disetujui</span><strong id="approvedCount">0</strong></div><div><span>Ditolak</span><strong id="rejectedCount">0</strong></div></section>
+      <section class="panel"><div class="result-head"><div><div class="eyebrow">PERMINTAAN AKSES</div><h2>Pengguna</h2></div><button id="refreshAdmin" class="secondary">↻ Refresh</button></div><div id="userTable" class="user-list"></div></section>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
