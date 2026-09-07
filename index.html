@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BocorData.my.id — Secure Data Intelligence</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="loginView" class="auth-page">
+    <section class="auth-card">
+      <div class="brand"><div class="brand-mark">B</div><div><strong>BocorData.my.id</strong><span>Secure Data Intelligence</span></div></div>
+      <div class="eyebrow">PRIVATE ACCESS</div>
+      <h1>Selamat datang</h1>
+      <p class="muted">Login untuk mengakses pemeriksaan data.</p>
+      <form id="loginForm">
+        <label>Email</label><input id="email" type="email" placeholder="admin@example.com" required>
+        <label>Password</label><input id="password" type="password" placeholder="••••••••" required>
+        <button class="primary" type="submit">Masuk ke Dashboard <span>→</span></button>
+        <div id="loginError" class="error hidden">Email atau password salah.</div>
+      </form>
+      <p class="privacy">Akses hanya untuk pengguna terotorisasi.</p>
+    </section>
+  </div>
+
+  <div id="appView" class="app hidden">
+    <header class="topbar"><div class="brand"><div class="brand-mark">B</div><div><strong>BocorData.my.id</strong><span>Secure Data Intelligence</span></div></div><button id="logout" class="ghost">Keluar</button></header>
+    <main class="container">
+      <div class="hero"><div><div class="eyebrow">DATA EXPOSURE CHECK</div><h1>Cek kebocoran data</h1><p>Masukkan identifier yang ingin diperiksa melalui API Anda.</p></div><div class="status"><i></i> Sistem siap</div></div>
+      <section class="panel">
+        <label for="query">Identifier</label>
+        <div class="search-row"><input id="query" placeholder="Email, nomor telepon, username, atau identifier lain"><button id="checkBtn" class="primary">Periksa Data <span>→</span></button></div>
+        <p class="hint">Gunakan hanya data yang Anda berwenang untuk periksa.</p>
+      </section>
+      <section id="resultPanel" class="panel result hidden"><div class="result-head"><div><div class="eyebrow">HASIL PEMERIKSAAN</div><h2 id="resultTitle">Hasil</h2></div><span id="resultBadge" class="badge">—</span></div><pre id="resultData"></pre></section>
+    </main>
+    <footer>© 2026 BocorData.my.id · Authorized access only</footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
