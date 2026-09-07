@@ -1,6 +1,7 @@
 ---
 deployment:
   tasks:
-    - /bin/cp index.html $HOME/public_html/
-    - /bin/cp style.css $HOME/public_html/
-    - /bin/cp app.js $HOME/public_html/
+    - export DEPLOYPATH=/home/jetz7773/public_html/bocordata.my.id/
+    - /bin/cp index.html $DEPLOYPATH
+    - /bin/cp style.css $DEPLOYPATH
+    - /bin/cp app.js $DEPLOYPATH
