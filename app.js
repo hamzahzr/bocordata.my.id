@@ -65,11 +65,15 @@ $('registerForm').addEventListener('submit',async e=>{
 $('logout').addEventListener('click',async()=>{try{await jsonFetch(API.logout,{method:'POST'})}catch(e){} showView('login');});
 $('backDashboard').addEventListener('click',()=>showView('app'));
 
-function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function escapeHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
 function flattenValue(v){
   if(v===null||v===undefined||v==='') return '—';
   if(typeof v==='object') return JSON.stringify(v,null,2);
   return String(v);
+}
+function isNoResultRow(row){
+  const text=JSON.stringify(row||{}).toLowerCase();
+  return text.includes('no results found') || text.includes('no result found');
 }
 function renderResults(payload){
   const root=$('resultData'); root.innerHTML='';
@@ -79,13 +83,21 @@ function renderResults(payload){
     const pre=document.createElement('pre'); pre.textContent=JSON.stringify(data,null,2); root.appendChild(pre); return;
   }
   const keys=Object.keys(list);
-  const allRows=keys.reduce((n,k)=>n+(Array.isArray(list[k]?.Data)?list[k].Data.length:0),0);
-  root.innerHTML=`<div class="result-summary"><div class="summary-card"><span>Sumber ditemukan</span><strong>${keys.length}</strong></div><div class="summary-card"><span>Total data</span><strong>${allRows}</strong></div><div class="summary-card"><span>Status</span><strong>SELESAI</strong></div></div><div class="result-toolbar"><input id="resultFilter" placeholder="Cari di hasil pemeriksaan…" autocomplete="off"><span class="hint">Tampilan vertikal • mudah dibaca di HP</span></div><div id="resultCards"></div>`;
+  const normalized=keys.map(name=>{
+    const item=list[name]||{};
+    const rows=Array.isArray(item.Data)?item.Data:[];
+    return {name,item,rows:rows.filter(row=>!isNoResultRow(row))};
+  });
+  const totalData=normalized.reduce((n,x)=>n+x.rows.length,0);
+  const sourcesFound=normalized.filter(x=>x.rows.length>0).length;
+  const hasNoResults=totalData===0;
+
+  root.innerHTML=`<div class="result-summary"><div class="summary-card"><span>Sumber ditemukan</span><strong>${sourcesFound}</strong></div><div class="summary-card"><span>Total data</span><strong>${totalData}</strong></div><div class="summary-card"><span>Status</span><strong>${hasNoResults?'TIDAK DITEMUKAN':'SELESAI'}</strong></div></div><div class="result-toolbar"><input id="resultFilter" placeholder="Cari di hasil pemeriksaan…" autocomplete="off"><span class="hint">Tampilan vertikal • mudah dibaca di HP</span></div><div id="resultCards"></div>`;
   const cards=$('resultCards');
   const renderFiltered=()=>{
     const filter=($('resultFilter')?.value||'').trim().toLowerCase(); cards.innerHTML='';
-    keys.forEach((name,index)=>{
-      const item=list[name]||{}; const rows=Array.isArray(item.Data)?item.Data:[];
+    normalized.forEach((source,index)=>{
+      const {name,item,rows}=source;
       const sourceText=(name+' '+(item.InfoLeak||'')+' '+JSON.stringify(rows)).toLowerCase();
       if(filter && !sourceText.includes(filter)) return;
       const card=document.createElement('article'); card.className='leak-card';
@@ -103,8 +115,10 @@ function renderResults(payload){
         });
         if(rows.length>100) html+=`<div class="hint">Menampilkan 100 data pertama dari ${rows.length} data.</div>`;
         html+='</div>';
-      } else html+='<div class="empty">Tidak ada detail data pada sumber ini.</div>';
-      card.innerHTML=html; cards.appendChild(card);
+      } else {
+        html+='<div class="empty-result"><strong>0 hasil ditemukan</strong><p>Coba gunakan data lain, misalnya <b>email</b>, <b>nama lengkap</b>, atau <b>nomor telepon</b>. Pastikan juga identifier yang dimasukkan sudah benar.</p></div>';
+      }
+      cards.innerHTML+=html;
     });
     if(!cards.children.length) cards.innerHTML='<div class="empty">Tidak ada hasil yang cocok dengan pencarian.</div>';
   };
@@ -124,7 +138,13 @@ $('checkBtn').addEventListener('click',async()=>{
   $('resultTitle').textContent='Memproses pemeriksaan'; $('resultBadge').textContent='LOADING'; $('resultMeta').textContent='Menghubungi server…'; $('resultData').innerHTML='<div class="loading">Sedang memproses permintaan…</div>';
   try{
     const data=await jsonFetch(API.check,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query})});
-    currentResult=data; $('resultTitle').textContent='Pemeriksaan selesai'; $('resultBadge').textContent='SUCCESS'; $('resultMeta').textContent=`Query: ${query} · ${new Date().toLocaleString('id-ID')}`; renderResults(data);
+    currentResult=data;
+    const payloadList=data?.data?.List;
+    const totalFound=payloadList&&typeof payloadList==='object'?Object.values(payloadList).reduce((n,item)=>n+(Array.isArray(item?.Data)?item.Data.filter(row=>!isNoResultRow(row)).length:0),0):null;
+    $('resultTitle').textContent=totalFound===0?'Tidak ditemukan':'Pemeriksaan selesai';
+    $('resultBadge').textContent=totalFound===0?'0 DATA':'SUCCESS';
+    $('resultMeta').textContent=`Query: ${query} · ${new Date().toLocaleString('id-ID')}`;
+    renderResults(data);
   }catch(err){$('resultTitle').textContent='Pemeriksaan gagal';$('resultBadge').textContent='ERROR';$('resultMeta').textContent='';$('resultData').innerHTML=`<div class="error">${escapeHtml(err.message)}</div>`;}
   finally{$('checkBtn').disabled=false;$('checkBtn').innerHTML='Periksa <span>→</span>';}
 });
@@ -135,7 +155,7 @@ $('downloadPdf').addEventListener('click',()=>{
   const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'mm',format:'a4'}); const query=$('query').value.trim();
   doc.setFontSize(18); doc.text('BocorData.my.id',15,18); doc.setFontSize(10); doc.text('Laporan Pemeriksaan Data',15,25); doc.text(`Identifier: ${query}`,15,31); doc.text(`Waktu: ${new Date().toLocaleString('id-ID')}`,15,37);
   let y=44; const list=currentResult?.data?.List;
-  if(list && typeof list==='object') Object.entries(list).forEach(([name,item])=>{if(y>270){doc.addPage();y=18;} doc.setFontSize(13);doc.text(String(name).slice(0,80),15,y);y+=5;doc.setFontSize(8);const info=String(item?.InfoLeak||'').slice(0,140);if(info){doc.text(doc.splitTextToSize(info,180),15,y);y+=8;}const rows=Array.isArray(item?.Data)?item.Data:[];if(rows.length&&doc.autoTable){const cols=[...new Set(rows.flatMap(r=>Object.keys(r||{})))].slice(0,8);doc.autoTable({startY:y,head:[cols],body:rows.slice(0,100).map(r=>cols.map(c=>String(r?.[c]??''))),styles:{fontSize:7,cellPadding:2},headStyles:{fontSize:7}});y=doc.lastAutoTable.finalY+10;}else{doc.text('Tidak ada detail data.',15,y);y+=10;}}); else {doc.setFontSize(8);doc.text(doc.splitTextToSize(JSON.stringify(currentResult,null,2),180),15,y);}
+  if(list && typeof list==='object') Object.entries(list).forEach(([name,item])=>{if(y>270){doc.addPage();y=18;} doc.setFontSize(13);doc.text(String(name).slice(0,80),15,y);y+=5;doc.setFontSize(8);const info=String(item?.InfoLeak||'').slice(0,140);if(info){doc.text(doc.splitTextToSize(info,180),15,y);y+=8;}const rows=Array.isArray(item?.Data)?item.Data.filter(row=>!isNoResultRow(row)):[];if(rows.length&&doc.autoTable){const cols=[...new Set(rows.flatMap(r=>Object.keys(r||{})))].slice(0,8);doc.autoTable({startY:y,head:[cols],body:rows.slice(0,100).map(r=>cols.map(c=>String(r?.[c]??''))),styles:{fontSize:7,cellPadding:2},headStyles:{fontSize:7}});y=doc.lastAutoTable.finalY+10;}else{doc.text('Tidak ada hasil yang ditemukan. Coba gunakan email, nama lengkap, atau nomor telepon.',15,y);y+=10;}}); else {doc.setFontSize(8);doc.text(doc.splitTextToSize(JSON.stringify(currentResult,null,2),180),15,y);}
   doc.save(`bocordata-${Date.now()}.pdf`);
 });
 
