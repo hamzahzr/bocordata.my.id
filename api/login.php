@@ -7,6 +7,7 @@ foreach(users() as $user){
     if(strtolower($user['email'])===$email && password_verify($password,$user['password'])){
         if($user['status']!=='approved') json_response(['error'=>$user['status']==='pending'?'Akun masih menunggu persetujuan admin.':'Akun tidak disetujui.'],403);
         session_regenerate_id(true); $_SESSION['user_id']=$user['id'];
+        log_activity('Login',$user,'Login berhasil');
         json_response(['ok'=>true,'user'=>public_user($user)]);
     }
 }
